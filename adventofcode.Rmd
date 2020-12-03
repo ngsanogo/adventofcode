@@ -6,5 +6,49 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+# Options
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+options(stringsAsFactors = FALSE)
+
+# Packages
+library(tidyverse)
+library(glue)
 ```
+
+# AOC 2020
+
+## --- Day 1 : Report Repair ---
+
+```{r day1-input}
+# read the input
+input <- readLines("./data/2020/day1-input.txt")
+```
+
+### Part One
+
+```{r part one}
+two_entrie <- combn(input, 2) %>% # create a matrix of possible
+  as.tibble() %>%
+  map_df(as.numeric)
+two_entrie <- unlist(two_entrie[colSums(two_entrie) == 2020], use.names = FALSE)
+# two_entrie
+# sum(two_entrie)
+# prod(two_entrie)
+```
+
+In my list, the two entries that sum to `2020` are `r paste(two_entrie, collapse = " and ")`.
+Multiplying them together produces `r paste(two_entrie, collapse = " * ")` = `r as.character(prod(two_entrie))`.
+
+### Part Two
+
+```{r part two}
+three_entrie <- combn(input, 3) %>%
+  as.tibble() %>%
+  map_df(as.numeric)
+three_entrie <- unlist(three_entrie[colSums(three_entrie) == 2020], use.names = FALSE)
+# three_entrie
+# sum(three_entrie)
+# prod(three_entrie)
+```
+
+In my list, the three entries that sum to `2020` are `r glue_collapse(three_entrie, ", ", last = ", and ")`. Multiplying them together produces `r paste(three_entrie,  collapse = " * ")` = `r as.character(prod(three_entrie))`.
