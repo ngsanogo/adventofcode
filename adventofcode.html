@@ -11,7 +11,7 @@
 
 <meta name="author" content="Issa Sanogo" />
 
-<meta name="date" content="2020-03-12" />
+<meta name="date" content="2020-04-12" />
 
 <title>Advent Of Code</title>
 
@@ -413,7 +413,7 @@ summary {
 
 <h1 class="title toc-ignore">Advent Of Code</h1>
 <h4 class="author">Issa Sanogo</h4>
-<h4 class="date">03/12/2020</h4>
+<h4 class="date">04/12/2020</h4>
 
 </div>
 
@@ -427,7 +427,7 @@ input &lt;- readLines(&quot;./data/2020/day1-input.txt&quot;)</code></pre>
 <div id="part-one" class="section level3">
 <h3>Part One</h3>
 <pre class="r"><code>two_entrie &lt;- combn(input, 2) %&gt;% # create a matrix of possible
-  as.tibble() %&gt;%
+  as_tibble() %&gt;%
   map_df(as.numeric)
 two_entrie &lt;- unlist(two_entrie[colSums(two_entrie) == 2020], use.names = FALSE)
 # two_entrie
@@ -438,7 +438,7 @@ two_entrie &lt;- unlist(two_entrie[colSums(two_entrie) == 2020], use.names = FAL
 <div id="part-two" class="section level3">
 <h3>Part Two</h3>
 <pre class="r"><code>three_entrie &lt;- combn(input, 3) %&gt;%
-  as.tibble() %&gt;%
+  as_tibble() %&gt;%
   map_df(as.numeric)
 three_entrie &lt;- unlist(three_entrie[colSums(three_entrie) == 2020], use.names = FALSE)
 # three_entrie
@@ -446,6 +446,30 @@ three_entrie &lt;- unlist(three_entrie[colSums(three_entrie) == 2020], use.names
 # prod(three_entrie)</code></pre>
 <p>In my list, the three entries that sum to <code>2020</code> are 1442, 396, and 182. Multiplying them together produces 1442 * 396 * 182 = 103927824.</p>
 </div>
+</div>
+<div id="day-2-password-philosophy" class="section level2">
+<h2>— Day 2: Password Philosophy —</h2>
+<pre class="r"><code># read the input
+input &lt;- readLines(&quot;./data/2020/day2-input.txt&quot;)</code></pre>
+<pre class="r"><code>valid_passwd &lt;- str_split(input, pattern = &quot;:\\s&quot;, simplify = TRUE) %&gt;% 
+  as_tibble() %&gt;% 
+  set_names(c(&quot;policy&quot;, &quot;passwd&quot;)) %&gt;% 
+  separate(policy, into = c(&quot;min&quot;, &quot;max&quot;), sep = &quot;-&quot;) %&gt;% 
+  separate(max, into = c(&quot;max&quot;, &quot;letter&quot;), sep = &quot;\\s&quot;) %&gt;% 
+  mutate(N = str_count(passwd, pattern = letter),
+         min = as.numeric(min),
+         max = as.numeric(max))
+res &lt;- table(valid_passwd$N &gt;= valid_passwd$min &amp; valid_passwd$N &lt;= as.numeric(valid_passwd$max))</code></pre>
+<p>In my list, 560 passwords are valid according to their policies.</p>
+<pre class="r"><code>res &lt;- valid_passwd %&gt;%
+  mutate(pos1 = str_sub(passwd, min, min),
+         pos2 = str_sub(passwd, max, max),
+         pos1_verif = pos1 == letter,
+         pos2_verif = pos2 == letter,
+         verif = pos1_verif + pos2_verif) %&gt;%
+  pull(verif) %&gt;% 
+  table()</code></pre>
+<p>In my list, 303 passwords are valid according to the new interpretation of the policies.</p>
 </div>
 </div>
 
