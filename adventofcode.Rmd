@@ -60,7 +60,7 @@ In my list, the three entries that sum to `2020` are `r glue_collapse(three_entr
 input <- readLines("./data/2020/day2-input.txt")
 ```
 
-```{r part One}
+```{r part one}
 valid_passwd <- str_split(input, pattern = ":\\s", simplify = TRUE) %>% 
   as_tibble() %>% 
   set_names(c("policy", "passwd")) %>% 
@@ -69,21 +69,53 @@ valid_passwd <- str_split(input, pattern = ":\\s", simplify = TRUE) %>%
   mutate(N = str_count(passwd, pattern = letter),
          min = as.numeric(min),
          max = as.numeric(max))
-res <- table(valid_passwd$N >= valid_passwd$min & valid_passwd$N <= as.numeric(valid_passwd$max))
+res <- sum(valid_passwd$N >= valid_passwd$min & valid_passwd$N <= as.numeric(valid_passwd$max))
+res
 ```
 
-In my list, `r res[2]` passwords are valid according to their policies.
+In my list, `r res` passwords are valid according to their policies.
 
-```{r part Two}
+```{r part two}
 res <- valid_passwd %>%
   mutate(pos1 = str_sub(passwd, min, min),
          pos2 = str_sub(passwd, max, max),
          pos1_verif = pos1 == letter,
          pos2_verif = pos2 == letter,
          verif = pos1_verif + pos2_verif) %>%
-  pull(verif) %>% 
-  table()
+  pull(verif)
+res <- sum(res == 1)
+res
 ```
-In my list, `r res[2]` passwords are valid according to the new interpretation of the policies.
+In my list, `r res` passwords are valid according to the new interpretation of the policies.
 
-## --- Day 3: Toboggan Trajectory ---
+## --- Day 3: Toboggan Trajetory ---
+
+```{r day3-input}
+# read the input
+input <- readLines("./data/2020/day3-input.txt")
+trajet <- str_split(input, pattern = "")
+
+# Function to traverse the forest
+traverse <- function (right, down) {
+  trajet <- trajet[seq(1, length(input), down)]
+  pos <- cumsum(rep(right, times = length(trajet) - 1 )) + 1
+  pos <- c(1, pos)
+  while (any(pos > 31))  pos[pos > 31] <- pos[pos > 31] - 31
+  res <- sapply(seq_along(pos), function(x) trajet[[x]][pos[x]])
+  sum(res == "#") 
+}
+```
+
+```{r part one}
+res <- traverse(3, 1)
+res
+```
+
+In my list, I'll encounter `r res` trees.
+
+```{r part one}
+res <- traverse(1, 1) * traverse(3, 1) * traverse(5, 1) * traverse(7, 1) * traverse(1, 2)
+res
+```
+
+I get `r res` when I multiply together the number of trees encountered on each of the listed slopes.
