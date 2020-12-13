@@ -3,6 +3,8 @@ title: "Advent Of Code"
 author: "Issa Sanogo"
 date: '`r format(Sys.Date(), "%d/%m/%Y")`'
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -12,8 +14,15 @@ options(stringsAsFactors = FALSE)
 
 # Packages
 library(tidyverse)
-library(glue)
 ```
+
+```{r function}
+# !is.na
+not_na <- Negate(is.na)
+# !%in%
+`%not_in%` <- Negate(`%in%`)
+```
+
 
 # AOC 2020
 
@@ -31,13 +40,10 @@ two_entrie <- combn(input, 2) %>% # create a matrix of possible
   as_tibble() %>%
   map_df(as.numeric)
 two_entrie <- unlist(two_entrie[colSums(two_entrie) == 2020], use.names = FALSE)
-# two_entrie
-# sum(two_entrie)
-# prod(two_entrie)
+two_entrie
+sum(two_entrie)
+as.character(prod(two_entrie))
 ```
-
-In my list, the two entries that sum to `2020` are `r paste(two_entrie, collapse = " and ")`.
-Multiplying them together produces `r paste(two_entrie, collapse = " * ")` = `r as.character(prod(two_entrie))`.
 
 ### Part Two
 
@@ -46,12 +52,10 @@ three_entrie <- combn(input, 3) %>%
   as_tibble() %>%
   map_df(as.numeric)
 three_entrie <- unlist(three_entrie[colSums(three_entrie) == 2020], use.names = FALSE)
-# three_entrie
-# sum(three_entrie)
-# prod(three_entrie)
+three_entrie
+sum(three_entrie)
+as.character(prod(three_entrie))
 ```
-
-In my list, the three entries that sum to `2020` are `r glue_collapse(three_entrie, ", ", last = ", and ")`. Multiplying them together produces `r paste(three_entrie,  collapse = " * ")` = `r as.character(prod(three_entrie))`.
 
 ## --- Day 2: Password Philosophy ---
 
@@ -69,11 +73,8 @@ valid_passwd <- str_split(input, pattern = ":\\s", simplify = TRUE) %>%
   mutate(N = str_count(passwd, pattern = letter),
          min = as.numeric(min),
          max = as.numeric(max))
-res <- sum(valid_passwd$N >= valid_passwd$min & valid_passwd$N <= as.numeric(valid_passwd$max))
-res
+sum(valid_passwd$N >= valid_passwd$min & valid_passwd$N <= valid_passwd$max)
 ```
-
-In my list, `r res` passwords are valid according to their policies.
 
 ```{r part two}
 res <- valid_passwd %>%
@@ -82,11 +83,9 @@ res <- valid_passwd %>%
          pos1_verif = pos1 == letter,
          pos2_verif = pos2 == letter,
          verif = pos1_verif + pos2_verif) %>%
-  pull(verif)
-res <- sum(res == 1)
-res
+  filter(verif == 1) %>% 
+  nrow()
 ```
-In my list, `r res` passwords are valid according to the new interpretation of the policies.
 
 ## --- Day 3: Toboggan Trajetory ---
 
@@ -107,15 +106,66 @@ traverse <- function (right, down) {
 ```
 
 ```{r part one}
-res <- traverse(3, 1)
-res
+traverse(3, 1)
 ```
-
-In my list, I'll encounter `r res` trees.
 
 ```{r part one}
-res <- traverse(1, 1) * traverse(3, 1) * traverse(5, 1) * traverse(7, 1) * traverse(1, 2)
-res
+traverse(1, 1) * traverse(3, 1) * traverse(5, 1) * traverse(7, 1) * traverse(1, 2)
 ```
 
-I get `r res` when I multiply together the number of trees encountered on each of the listed slopes.
+## --- Day 4: Passport Processing ---
+
+```{r day4-input}
+# read the input
+input <- readLines("./data/2020/day4-input.txt")
+passport <- input %>%
+  str_c(collapse = "\n") %>%
+  str_split(pattern = "\n\n") %>%
+  unlist() %>%
+  as_tibble()
+```
+
+```{r part one}
+passport %>% 
+  mutate(byr = str_detect(value, pattern = "byr"),
+         iyr = str_detect(value, pattern = "iyr"),
+         eyr = str_detect(value, pattern = "eyr"),
+         hgt = str_detect(value, pattern = "hgt"),
+         hcl = str_detect(value, pattern = "hcl"),
+         ecl = str_detect(value, pattern = "ecl"),
+         pid = str_detect(value, pattern = "pid")
+  ) %>%
+  filter(byr, iyr, eyr, hgt, hcl, ecl, pid) %>% 
+  nrow()
+```
+
+```{r part two}
+passport %>% 
+  mutate(value = str_replace(value, pattern = "\\s+", replacement = " "),
+         byr = as.numeric(str_extract(value, pattern = "(?<=byr:)(\\d+)")),
+         iyr = as.numeric(str_extract(value, pattern = "(?<=iyr:)(\\d+)")),
+         eyr = as.numeric(str_extract(value, pattern = "(?<=eyr:)(\\d+)")),
+         hgt = str_extract(value, pattern = "(?<=hgt:)(\\d+[[:alpha:]]+)"),
+         hgt_unit = str_extract(hgt, pattern = "[[:alpha:]]+"),
+         hgt = as.numeric(str_extract(hgt, pattern = "\\d+")),
+         hcl = str_extract(value, pattern = "(?<=hcl:)(#[0-9a-f]+)"),
+         ecl = str_extract(value, pattern = "(?<=ecl:)([[:alpha:]]+)"),
+         pid = str_extract(value, pattern = "(?<=pid:)\\d+")
+  ) %>%
+  filter(byr >= 1920 & byr <= 2002 &
+           iyr >= 2010 & iyr <= 2020 &
+           eyr >= 2020 & eyr <= 2030 &
+           ((hgt >= 150 & hgt <= 193 & hgt_unit == "cm")|(hgt >= 59 & hgt <= 76 & hgt_unit == "in")) &
+           nchar(hcl) == 7 &
+           str_detect(ecl, pattern = "amb$|blu$|brn$|gry$|grn$|hzl$|oth$") &
+           nchar(pid) == 9
+  ) %>% 
+  nrow()
+```
+
+## --- Day 5: Binary Boarding ---
+
+```{r}
+
+```
+
