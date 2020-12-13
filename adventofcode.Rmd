@@ -23,7 +23,6 @@ not_na <- Negate(is.na)
 `%not_in%` <- Negate(`%in%`)
 ```
 
-
 # AOC 2020
 
 ## --- Day 1 : Report Repair ---
@@ -33,9 +32,7 @@ not_na <- Negate(is.na)
 input <- readLines("./data/2020/day1-input.txt")
 ```
 
-### Part One
-
-```{r part one}
+```{r}
 two_entrie <- combn(input, 2) %>% # create a matrix of possible
   as_tibble() %>%
   map_df(as.numeric)
@@ -45,9 +42,7 @@ sum(two_entrie)
 as.character(prod(two_entrie))
 ```
 
-### Part Two
-
-```{r part two}
+```{r}
 three_entrie <- combn(input, 3) %>%
   as_tibble() %>%
   map_df(as.numeric)
@@ -59,12 +54,12 @@ as.character(prod(three_entrie))
 
 ## --- Day 2: Password Philosophy ---
 
-```{r day2-input}
+```{r}
 # read the input
 input <- readLines("./data/2020/day2-input.txt")
 ```
 
-```{r part one}
+```{r}
 valid_passwd <- str_split(input, pattern = ":\\s", simplify = TRUE) %>% 
   as_tibble() %>% 
   set_names(c("policy", "passwd")) %>% 
@@ -76,7 +71,7 @@ valid_passwd <- str_split(input, pattern = ":\\s", simplify = TRUE) %>%
 sum(valid_passwd$N >= valid_passwd$min & valid_passwd$N <= valid_passwd$max)
 ```
 
-```{r part two}
+```{r}
 res <- valid_passwd %>%
   mutate(pos1 = str_sub(passwd, min, min),
          pos2 = str_sub(passwd, max, max),
@@ -105,11 +100,11 @@ traverse <- function (right, down) {
 }
 ```
 
-```{r part one}
+```{r}
 traverse(3, 1)
 ```
 
-```{r part one}
+```{r}
 traverse(1, 1) * traverse(3, 1) * traverse(5, 1) * traverse(7, 1) * traverse(1, 2)
 ```
 
@@ -125,7 +120,7 @@ passport <- input %>%
   as_tibble()
 ```
 
-```{r part one}
+```{r}
 passport %>% 
   mutate(byr = str_detect(value, pattern = "byr"),
          iyr = str_detect(value, pattern = "iyr"),
@@ -139,7 +134,7 @@ passport %>%
   nrow()
 ```
 
-```{r part two}
+```{r}
 passport %>% 
   mutate(value = str_replace(value, pattern = "\\s+", replacement = " "),
          byr = as.numeric(str_extract(value, pattern = "(?<=byr:)(\\d+)")),
@@ -165,7 +160,87 @@ passport %>%
 
 ## --- Day 5: Binary Boarding ---
 
-```{r}
+```{r day5-input}
+# read the input
+input <- readLines("data/2020/day5-input.txt")
+seat <- tibble(rows = str_sub(input, end = 7), cols = str_sub(input, start = 8))
 
+# function to search your seat
+search_seat <- function (x, by = c("row", "col")) {
+  x <- unlist(strsplit(x, split= ""))
+  if (by == "row") {
+    y <- 0:127
+    up <- "B"
+  } else {
+    y <- 0:7
+    up <- "R"
+  }
+  for (i in x) {
+    if (i == up) {
+      y <- y[(floor(length(y)/2) + 1):length(y)]
+    } else {
+      y <- y[1:floor(length(y)/2)]
+    }
+  }
+  y
+}
 ```
+
+```{r}
+res <- seat %>%
+  mutate(nrow = unlist(map(rows, search_seat, by = "row")),
+         ncol = unlist(map(cols, search_seat, by = "col")),
+         id = (nrow * 8) + ncol
+  )
+res %>%
+  pull(id) %>%
+  max()
+```
+
+```{r}
+res %>% 
+  arrange(id) %>%
+  mutate(diff_id = c(NA, diff(id))) %>%
+  filter(diff_id == 2) %>%
+  pull(id) - 1
+```
+
+## --- Day 6: Custom Customs ---
+
+```{r day6-input}
+# read the input
+input <- readLines("data/2020/day6-input.txt") %>%
+  str_c(collapse = "\n") %>%
+  str_split(pattern = "\n\n") %>%
+  unlist() %>%
+  as_tibble()
+```
+
+```{r}
+res <- input %>% 
+  mutate(
+    value = str_replace_all(value, pattern = "\n", replacement = ""),
+    ans = unlist(map(value, function(x) length(unique(unlist(str_split(x, pattern = ""))))))
+  )
+sum(res$ans)
+```
+
+```{r}
+input %>%
+  mutate(
+    n = str_count(value, pattern = "\n") + 1,
+    value = str_replace_all(value, pattern = "\n", replacement = ""),
+    ans = unlist(map2(value, n, function(x, y) sum(table(unlist(str_split(x, pattern = "")))/y == 1)))
+  ) %>%
+  pull(ans) %>%
+  sum()
+```
+
+## --- Day 7: Handy Haversacks ---
+
+```{r day7-input}
+input <- readLines("data/2020/day7-input.txt")
+```
+
+
 

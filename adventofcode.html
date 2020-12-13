@@ -11,7 +11,6 @@
 
 <meta name="author" content="Issa Sanogo" />
 
-<meta name="date" content="2020-04-12" />
 
 <title>Advent Of Code</title>
 
@@ -413,39 +412,41 @@ summary {
 
 <h1 class="title toc-ignore">Advent Of Code</h1>
 <h4 class="author">Issa Sanogo</h4>
-<h4 class="date">04/12/2020</h4>
+<h4 class="date">13/12/2020</h4>
 
 </div>
 
 
+<pre class="r"><code># !is.na
+not_na &lt;- Negate(is.na)
+# !%in%
+`%not_in%` &lt;- Negate(`%in%`)</code></pre>
 <div id="aoc-2020" class="section level1">
 <h1>AOC 2020</h1>
 <div id="day-1-report-repair" class="section level2">
 <h2>— Day 1 : Report Repair —</h2>
 <pre class="r"><code># read the input
 input &lt;- readLines(&quot;./data/2020/day1-input.txt&quot;)</code></pre>
-<div id="part-one" class="section level3">
-<h3>Part One</h3>
 <pre class="r"><code>two_entrie &lt;- combn(input, 2) %&gt;% # create a matrix of possible
   as_tibble() %&gt;%
   map_df(as.numeric)
 two_entrie &lt;- unlist(two_entrie[colSums(two_entrie) == 2020], use.names = FALSE)
-# two_entrie
-# sum(two_entrie)
-# prod(two_entrie)</code></pre>
-<p>In my list, the two entries that sum to <code>2020</code> are 1751 and 269. Multiplying them together produces 1751 * 269 = 471019.</p>
-</div>
-<div id="part-two" class="section level3">
-<h3>Part Two</h3>
+two_entrie</code></pre>
+<pre><code>## [1] 1751  269</code></pre>
+<pre class="r"><code>sum(two_entrie)</code></pre>
+<pre><code>## [1] 2020</code></pre>
+<pre class="r"><code>as.character(prod(two_entrie))</code></pre>
+<pre><code>## [1] &quot;471019&quot;</code></pre>
 <pre class="r"><code>three_entrie &lt;- combn(input, 3) %&gt;%
   as_tibble() %&gt;%
   map_df(as.numeric)
 three_entrie &lt;- unlist(three_entrie[colSums(three_entrie) == 2020], use.names = FALSE)
-# three_entrie
-# sum(three_entrie)
-# prod(three_entrie)</code></pre>
-<p>In my list, the three entries that sum to <code>2020</code> are 1442, 396, and 182. Multiplying them together produces 1442 * 396 * 182 = 103927824.</p>
-</div>
+three_entrie</code></pre>
+<pre><code>## [1] 1442  396  182</code></pre>
+<pre class="r"><code>sum(three_entrie)</code></pre>
+<pre><code>## [1] 2020</code></pre>
+<pre class="r"><code>as.character(prod(three_entrie))</code></pre>
+<pre><code>## [1] &quot;103927824&quot;</code></pre>
 </div>
 <div id="day-2-password-philosophy" class="section level2">
 <h2>— Day 2: Password Philosophy —</h2>
@@ -459,17 +460,146 @@ input &lt;- readLines(&quot;./data/2020/day2-input.txt&quot;)</code></pre>
   mutate(N = str_count(passwd, pattern = letter),
          min = as.numeric(min),
          max = as.numeric(max))
-res &lt;- table(valid_passwd$N &gt;= valid_passwd$min &amp; valid_passwd$N &lt;= as.numeric(valid_passwd$max))</code></pre>
-<p>In my list, 560 passwords are valid according to their policies.</p>
+sum(valid_passwd$N &gt;= valid_passwd$min &amp; valid_passwd$N &lt;= valid_passwd$max)</code></pre>
+<pre><code>## [1] 560</code></pre>
 <pre class="r"><code>res &lt;- valid_passwd %&gt;%
   mutate(pos1 = str_sub(passwd, min, min),
          pos2 = str_sub(passwd, max, max),
          pos1_verif = pos1 == letter,
          pos2_verif = pos2 == letter,
          verif = pos1_verif + pos2_verif) %&gt;%
-  pull(verif) %&gt;% 
-  table()</code></pre>
-<p>In my list, 303 passwords are valid according to the new interpretation of the policies.</p>
+  filter(verif == 1) %&gt;% 
+  nrow()</code></pre>
+</div>
+<div id="day-3-toboggan-trajetory" class="section level2">
+<h2>— Day 3: Toboggan Trajetory —</h2>
+<pre class="r"><code># read the input
+input &lt;- readLines(&quot;./data/2020/day3-input.txt&quot;)
+trajet &lt;- str_split(input, pattern = &quot;&quot;)
+
+# Function to traverse the forest
+traverse &lt;- function (right, down) {
+  trajet &lt;- trajet[seq(1, length(input), down)]
+  pos &lt;- cumsum(rep(right, times = length(trajet) - 1 )) + 1
+  pos &lt;- c(1, pos)
+  while (any(pos &gt; 31))  pos[pos &gt; 31] &lt;- pos[pos &gt; 31] - 31
+  res &lt;- sapply(seq_along(pos), function(x) trajet[[x]][pos[x]])
+  sum(res == &quot;#&quot;) 
+}</code></pre>
+<pre class="r"><code>traverse(3, 1)</code></pre>
+<pre><code>## [1] 250</code></pre>
+<pre class="r"><code>traverse(1, 1) * traverse(3, 1) * traverse(5, 1) * traverse(7, 1) * traverse(1, 2)</code></pre>
+<pre><code>## [1] 1592662500</code></pre>
+</div>
+<div id="day-4-passport-processing" class="section level2">
+<h2>— Day 4: Passport Processing —</h2>
+<pre class="r"><code># read the input
+input &lt;- readLines(&quot;./data/2020/day4-input.txt&quot;)
+passport &lt;- input %&gt;%
+  str_c(collapse = &quot;\n&quot;) %&gt;%
+  str_split(pattern = &quot;\n\n&quot;) %&gt;%
+  unlist() %&gt;%
+  as_tibble()</code></pre>
+<pre class="r"><code>passport %&gt;% 
+  mutate(byr = str_detect(value, pattern = &quot;byr&quot;),
+         iyr = str_detect(value, pattern = &quot;iyr&quot;),
+         eyr = str_detect(value, pattern = &quot;eyr&quot;),
+         hgt = str_detect(value, pattern = &quot;hgt&quot;),
+         hcl = str_detect(value, pattern = &quot;hcl&quot;),
+         ecl = str_detect(value, pattern = &quot;ecl&quot;),
+         pid = str_detect(value, pattern = &quot;pid&quot;)
+  ) %&gt;%
+  filter(byr, iyr, eyr, hgt, hcl, ecl, pid) %&gt;% 
+  nrow()</code></pre>
+<pre><code>## [1] 239</code></pre>
+<pre class="r"><code>passport %&gt;% 
+  mutate(value = str_replace(value, pattern = &quot;\\s+&quot;, replacement = &quot; &quot;),
+         byr = as.numeric(str_extract(value, pattern = &quot;(?&lt;=byr:)(\\d+)&quot;)),
+         iyr = as.numeric(str_extract(value, pattern = &quot;(?&lt;=iyr:)(\\d+)&quot;)),
+         eyr = as.numeric(str_extract(value, pattern = &quot;(?&lt;=eyr:)(\\d+)&quot;)),
+         hgt = str_extract(value, pattern = &quot;(?&lt;=hgt:)(\\d+[[:alpha:]]+)&quot;),
+         hgt_unit = str_extract(hgt, pattern = &quot;[[:alpha:]]+&quot;),
+         hgt = as.numeric(str_extract(hgt, pattern = &quot;\\d+&quot;)),
+         hcl = str_extract(value, pattern = &quot;(?&lt;=hcl:)(#[0-9a-f]+)&quot;),
+         ecl = str_extract(value, pattern = &quot;(?&lt;=ecl:)([[:alpha:]]+)&quot;),
+         pid = str_extract(value, pattern = &quot;(?&lt;=pid:)\\d+&quot;)
+  ) %&gt;%
+  filter(byr &gt;= 1920 &amp; byr &lt;= 2002 &amp;
+           iyr &gt;= 2010 &amp; iyr &lt;= 2020 &amp;
+           eyr &gt;= 2020 &amp; eyr &lt;= 2030 &amp;
+           ((hgt &gt;= 150 &amp; hgt &lt;= 193 &amp; hgt_unit == &quot;cm&quot;)|(hgt &gt;= 59 &amp; hgt &lt;= 76 &amp; hgt_unit == &quot;in&quot;)) &amp;
+           nchar(hcl) == 7 &amp;
+           str_detect(ecl, pattern = &quot;amb$|blu$|brn$|gry$|grn$|hzl$|oth$&quot;) &amp;
+           nchar(pid) == 9
+  ) %&gt;% 
+  nrow()</code></pre>
+<pre><code>## [1] 188</code></pre>
+</div>
+<div id="day-5-binary-boarding" class="section level2">
+<h2>— Day 5: Binary Boarding —</h2>
+<pre class="r"><code># read the input
+input &lt;- readLines(&quot;data/2020/day5-input.txt&quot;)
+seat &lt;- tibble(rows = str_sub(input, end = 7), cols = str_sub(input, start = 8))
+
+# function to search your seat
+search_seat &lt;- function (x, by = c(&quot;row&quot;, &quot;col&quot;)) {
+  x &lt;- unlist(strsplit(x, split= &quot;&quot;))
+  if (by == &quot;row&quot;) {
+    y &lt;- 0:127
+    up &lt;- &quot;B&quot;
+  } else {
+    y &lt;- 0:7
+    up &lt;- &quot;R&quot;
+  }
+  for (i in x) {
+    if (i == up) {
+      y &lt;- y[(floor(length(y)/2) + 1):length(y)]
+    } else {
+      y &lt;- y[1:floor(length(y)/2)]
+    }
+  }
+  y
+}</code></pre>
+<pre class="r"><code>res &lt;- seat %&gt;%
+  mutate(nrow = unlist(map(rows, search_seat, by = &quot;row&quot;)),
+         ncol = unlist(map(cols, search_seat, by = &quot;col&quot;)),
+         id = (nrow * 8) + ncol
+  )
+res %&gt;%
+  pull(id) %&gt;%
+  max()</code></pre>
+<pre><code>## [1] 998</code></pre>
+<pre class="r"><code>res %&gt;% 
+  arrange(id) %&gt;%
+  mutate(diff_id = c(NA, diff(id))) %&gt;%
+  filter(diff_id == 2) %&gt;%
+  pull(id) - 1</code></pre>
+<pre><code>## [1] 676</code></pre>
+</div>
+<div id="day-6-custom-customs" class="section level2">
+<h2>— Day 6: Custom Customs —</h2>
+<pre class="r"><code># read the input
+input &lt;- readLines(&quot;data/2020/day6-input.txt&quot;) %&gt;%
+  str_c(collapse = &quot;\n&quot;) %&gt;%
+  str_split(pattern = &quot;\n\n&quot;) %&gt;%
+  unlist() %&gt;%
+  as_tibble()</code></pre>
+<pre class="r"><code>res &lt;- input %&gt;% 
+  mutate(
+    value = str_replace_all(value, pattern = &quot;\n&quot;, replacement = &quot;&quot;),
+    ans = unlist(map(value, function(x) length(unique(unlist(str_split(x, pattern = &quot;&quot;))))))
+  )
+sum(res$ans)</code></pre>
+<pre><code>## [1] 6259</code></pre>
+<pre class="r"><code>input %&gt;%
+  mutate(
+    n = str_count(value, pattern = &quot;\n&quot;) + 1,
+    value = str_replace_all(value, pattern = &quot;\n&quot;, replacement = &quot;&quot;),
+    ans = unlist(map2(value, n, function(x, y) sum(table(unlist(str_split(x, pattern = &quot;&quot;)))/y == 1)))
+  ) %&gt;%
+  pull(ans) %&gt;%
+  sum()</code></pre>
+<pre><code>## [1] 3178</code></pre>
 </div>
 </div>
 
