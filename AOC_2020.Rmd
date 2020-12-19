@@ -1,5 +1,5 @@
 ---
-title: "Advent Of Code"
+title: "AOC 2020"
 author: "Issa Sanogo"
 date: '`r format(Sys.Date(), "%d/%m/%Y")`'
 output: html_document
@@ -23,8 +23,6 @@ not_na <- Negate(is.na)
 `%not_in%` <- Negate(`%in%`)
 ```
 
-# AOC 2020
-
 ## --- Day 1 : Report Repair ---
 
 ```{r day1-input}
@@ -34,7 +32,7 @@ input <- readLines("./data/2020/day1-input.txt")
 
 ```{r}
 two_entrie <- combn(input, 2) %>% # create a matrix of possible
-  as_tibble() %>%
+  data.frame() %>%
   map_df(as.numeric)
 two_entrie <- unlist(two_entrie[colSums(two_entrie) == 2020], use.names = FALSE)
 two_entrie
@@ -44,7 +42,7 @@ as.character(prod(two_entrie))
 
 ```{r}
 three_entrie <- combn(input, 3) %>%
-  as_tibble() %>%
+  data.frame() %>%
   map_df(as.numeric)
 three_entrie <- unlist(three_entrie[colSums(three_entrie) == 2020], use.names = FALSE)
 three_entrie
@@ -242,5 +240,49 @@ input %>%
 input <- readLines("data/2020/day7-input.txt")
 ```
 
+```{r}
+res <- input %>%
+  str_subset(pattern = "contain.+shiny gold") %>%
+  str_extract(pattern = "(.*?)(?=\\s+bags\\s+contain)")
+pat <- NULL
+while (TRUE) {
+  pat <- input %>%
+    str_subset(pattern = str_c("contain.+", res, collapse = "|")) %>%
+    str_extract(pattern = "(.*?)(?=\\s+bags\\s+contain)") %>%
+    unique()
+  if (length(res) != length(unique(c(res, pat)))) {
+    res <- unique(c(res, pat))
+  } else {
+    break
+  }
+}
+```
+
+```{r}
+res <- tibble(input = tolower(input)) %>%
+  mutate(bag = str_extract(input, pattern = "(.*?)(?=\\sbags\\scontain.+)"),
+         contain = str_extract(input, pattern = "(?<=contain)(.+)"),
+         contain = str_trim(contain),
+         nbag = str_count(contain, pattern = "bag"),
+         nbag = ifelse(contain %in% "no other bags.", 0, nbag),
+         contain = str_replace_all(contain, pattern = "(\\s+?)bag(s?)(\\.?)", replacement = ""),
+         contain = str_replace_all(contain, pattern = ",", replacement = " +"),
+         capacity = case_when(
+           nbag == 1 & str_detect(contain, pattern = str_c(nobag, collapse = "|")) ~ as.numeric(str_extract(contain, pattern = "\\d+")),
+           contain %in% "no other" ~ 0,
+           TRUE ~ NA_real_
+         )
+  )
+
+while (any(is.na(res$capacity))) {
+  x <- str_c("* ", "(1 + ", res$capacity[!is.na(res$capacity)], ")")
+  names(x) <- res$bag[!is.na(res$capacity)]
+  y <- str_replace_all(res$contain, x)
+  res$capacity[!str_detect(y, pattern = "[a-z]")] <- sapply(y[!str_detect(y, pattern = "[a-z]")], function (x) eval(parse(text = x)))
+}
+res$capacity[res$bag == "shiny gold"]
+```
+
+## --- Day 8: Handheld Halting ---
 
 
